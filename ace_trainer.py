@@ -75,8 +75,8 @@ class TrainerACE:
             image_height=self.options.image_resolution,
             augment=self.options.use_aug,
             aug_rotation=self.options.aug_rotation,
-            aug_scale_max=self.options.aug_scale,
-            aug_scale_min=1 / self.options.aug_scale,
+            aug_scale_max=self.options.aug_scale_max,
+            aug_scale_min=self.options.aug_scale_min,
             num_clusters=self.options.num_clusters,  # Optional clustering for Cambridge experiments.
             cluster_idx=self.options.cluster_idx,    # Optional clustering for Cambridge experiments.
         )

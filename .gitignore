@@ -1,6 +1,8 @@
 __pycache__/
 .idea/
 
+data/
+
 # Dataset files.
 datasets/7scenes_*
 datasets/12scenes_*

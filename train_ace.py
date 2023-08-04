@@ -40,7 +40,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate_max', type=float, default=0.005,
                         help='highest learning rate of 1 cycle scheduler')
 
-    parser.add_argument('--training_buffer_size', type=int, default=8000000,
+    parser.add_argument('--training_buffer_size', type=int, default=2000000,
                         help='number of patches in the training buffer')
 
     parser.add_argument('--samples_per_image', type=int, default=1024,
@@ -73,7 +73,9 @@ if __name__ == '__main__':
     parser.add_argument('--aug_rotation', type=int, default=15,
                         help='max inplane rotation angle')
 
-    parser.add_argument('--aug_scale', type=float, default=1.5,
+    parser.add_argument('--aug_scale_max', type=float, default=1.5,
+                        help='max scale factor')
+    parser.add_argument('--aug_scale_min', type=float, default=0.7,
                         help='max scale factor')
 
     parser.add_argument('--image_resolution', type=int, default=480,
