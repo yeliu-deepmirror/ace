@@ -4,9 +4,9 @@
 
 This repository contains the code associated to the ACE paper:
 > **Accelerated Coordinate Encoding: Learning to Relocalize in Minutes using RGB and Poses**
-> 
+>
 > [Eric Brachmann](https://ebrach.github.io/), [Tommaso Cavallari](https://scholar.google.it/citations?user=r7osSm0AAAAJ&hl=en), and [Victor Adrian Prisacariu](https://www.robots.ox.ac.uk/~victor/)
-> 
+>
 > [CVPR 2023, Highlight](https://openaccess.thecvf.com/content/CVPR2023/papers/Brachmann_Accelerated_Coordinate_Encoding_Learning_to_Relocalize_in_Minutes_Using_RGB_CVPR_2023_paper.pdf)
 
 For further information please visit:
@@ -30,6 +30,12 @@ Table of contents:
 
 This code uses PyTorch to train and evaluate the scene-specific coordinate prediction head networks. It has been tested
 on Ubuntu 20.04 with a T4 Nvidia GPU, although it should reasonably run with other Linux distributions and GPUs as well.
+
+```shell
+bash artifacts/docker/create_docker_image.sh
+bash artifacts/docker/create_docker_container.sh
+bash artifacts/docker/execute_docker_container.sh
+```
 
 We provide a pre-configured [`conda`](https://docs.conda.io/en/latest/) environment containing all required dependencies
 necessary to run our code.
@@ -95,7 +101,7 @@ cd datasets
 ./setup_7scenes.py
 # Downloads the data to datasets/12scenes_{apt1_kitchen, ...}
 ./setup_12scenes.py
-``` 
+```
 
 To download and prepare the datasets using the PGT poses:
 
@@ -105,7 +111,7 @@ cd datasets
 ./setup_7scenes.py --poses pgt
 # Downloads the data to datasets/pgt_12scenes_{apt1_kitchen, ...}
 ./setup_12scenes.py --poses pgt
-``` 
+```
 
 ### Cambridge Landmarks / Niantic Wayspots:
 
@@ -253,8 +259,8 @@ mkdir -p output/Cambridge_GreatCourt
 
 # Merging results and computing metrics.
 
-# The merging script takes a --poses_suffix argument that's used to select only the 
-# poses generated for the requested number of clusters. 
+# The merging script takes a --poses_suffix argument that's used to select only the
+# poses generated for the requested number of clusters.
 ./merge_ensemble_results.py output/Cambridge_GreatCourt output/Cambridge_GreatCourt/merged_poses_4.txt --poses_suffix "_4.txt"
 
 # The output poses output by the previous script are then evaluated against the scene ground truth data.

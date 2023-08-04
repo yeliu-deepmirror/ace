@@ -9,5 +9,10 @@ datasets/wayspots_*
 datasets/pgt_*
 datasets/visloc_pseudo_gt_limitations
 
+# dsacstar build files
+dsacstar/build
+dsacstar/dsacstar.egg-info
+dsacstar/dist
+
 # Outputs.
 output/
