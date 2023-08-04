@@ -17,6 +17,7 @@ For further information please visit:
 Table of contents:
 
 - [Installation](#installation)
+- [Encoder Test](#encoder-test)
 - [Dataset Setup](#datasets)
 - [Usage](#usage)
     - [ACE Training](#ace-training)
@@ -124,6 +125,17 @@ cd datasets
 # Downloads the data to datasets/wayspots_{bears, cubes, ...}
 ./setup_wayspots.py
 ```
+
+## Encoder Test
+
+<p align="center">
+<img src="./misc/car_ace_encoder.gif">
+</p>
+
+<p align="center">
+<img src="./misc/outdoor_ace_encoder.gif">
+</p>
+
 
 ## Usage
 
