@@ -96,12 +96,10 @@ Software or its associated documentation.
 3.  Redistribution and modifications
 
     3.1 The Licensee may reproduce and distribute copies of the Software, with
-or without modifications, in source format only and only to this same GitHub
-repository , and provided that any and every distribution is accompanied by an
-unmodified copy of this License and that the following copyright notice is
-always displayed in an obvious manner: Copyright © Niantic, Inc. 2018. All
-rights reserved.
-
+or without modifications, in source format only and provided that any and every 
+distribution is accompanied by an unmodified copy of this License, and that the 
+following copyright notice is always displayed in an obvious manner:
+"Copyright © Niantic, Inc. 2023. All rights reserved."
 
     3.2 In the case where the Software has been modified, any distribution must
 include prominent notices indicating which files have been changed.
@@ -182,9 +180,9 @@ commercialization payable to the Licensee, as the case may be).
     The Licensee shall acknowledge the Authors and use of the Software in the
 publication of any work that uses, or results that are achieved through, the
 use of the Software. The following citation shall be included in the
-acknowledgement: “SimpleRecon: 3D Reconstruction Without 3D Convolutions",
-by M. Sayed, J. Gibson, J. Watson, V. Prisacariu, M. Firman, C. Godard,
-arXiv:2208.14743”.
+acknowledgement: "Accelerated Coordinate Encoding: Learning to Relocalize in
+Minutes using RGB and Poses"; by Eric Brachmann, Tommaso Cavallari, and Victor 
+Adrian Prisacariu; CVPR 2023.
 
 
 10. Governing Law.
