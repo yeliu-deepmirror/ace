@@ -1,31 +1,15 @@
 # Accelerated Coordinate Encoding: Learning to Relocalize in Minutes using RGB and Poses
 
-----------------------------------------------------------------------------------------
-
-This repository contains the code associated to the ACE paper:
-> **Accelerated Coordinate Encoding: Learning to Relocalize in Minutes using RGB and Poses**
->
-> [Eric Brachmann](https://ebrach.github.io/), [Tommaso Cavallari](https://scholar.google.it/citations?user=r7osSm0AAAAJ&hl=en), and [Victor Adrian Prisacariu](https://www.robots.ox.ac.uk/~victor/)
->
-> [CVPR 2023, Highlight](https://openaccess.thecvf.com/content/CVPR2023/papers/Brachmann_Accelerated_Coordinate_Encoding_Learning_to_Relocalize_in_Minutes_Using_RGB_CVPR_2023_paper.pdf)
-
 For further information please visit:
 
 - [Project page (with videos, method explanations, dataset details)](https://nianticlabs.github.io/ace)
-- [Arxiv](https://arxiv.org/abs/2305.14059)
+- This repository contains the code associated to the ACE paper: [Arxiv](https://arxiv.org/abs/2305.14059)
 
 Table of contents:
 
 - [Installation](#installation)
 - [Encoder Test](#encoder-test)
-- [Dataset Setup](#datasets)
 - [Usage](#usage)
-    - [ACE Training](#ace-training)
-    - [ACE Evaluation](#ace-evaluation)
-    - [Training Scripts](#complete-training-and-evaluation-scripts)
-    - [Pretrained ACE Networks](#pretrained-ace-networks)
-    - [Note on the Encoder Training](#encoder-training)
-- [References](#publications)
 
 ## Installation
 
@@ -67,75 +51,15 @@ python setup.py install
 
 Having done the steps above, you are ready to experiment with ACE!
 
-## Datasets
-
-The ACE method has been evaluated using multiple published datasets:
-
-- [Microsoft 7-Scenes](https://www.microsoft.com/en-us/research/project/rgb-d-dataset-7-scenes/)
-- [Stanford 12-Scenes](https://graphics.stanford.edu/projects/reloc/)
-- [Cambridge Landmarks](https://www.repository.cam.ac.uk/handle/1810/251342/)
-- [Niantic Wayspots](https://nianticlabs.github.io/ace#dataset)
-
-We provide scripts in the `datasets` folder to automatically download and extract the data in a format that can be
-readily used by the ACE scripts.
-The format is the same used by the DSAC* codebase, see [here](https://github.com/vislearn/dsacstar#data-structure) for
-details.
-
-> **Important: make sure you have checked the license terms of each dataset before using it.**
-
-### {7, 12}-Scenes:
-
-You can use the `datasets/setup_{7,12}scenes.py` scripts to download the data.
-As mentioned in the paper, we experimented with two variants of each of these datasets: one using the original
-D-SLAM ground truth camera poses, and one using _Pseudo Ground Truth (PGT)_ camera poses obtained after running SfM on
-the scenes
-(see
-the [ICCV 2021 paper](https://openaccess.thecvf.com/content/ICCV2021/html/Brachmann_On_the_Limits_of_Pseudo_Ground_Truth_in_Visual_Camera_ICCV_2021_paper.html)
-,
-and [associated code](https://github.com/tsattler/visloc_pseudo_gt_limitations/) for details).
-
-To download and prepare the datasets using the D-SLAM poses:
-
-```shell
-cd datasets
-# Downloads the data to datasets/7scenes_{chess, fire, ...}
-./setup_7scenes.py
-# Downloads the data to datasets/12scenes_{apt1_kitchen, ...}
-./setup_12scenes.py
-```
-
-To download and prepare the datasets using the PGT poses:
-
-```shell
-cd datasets
-# Downloads the data to datasets/pgt_7scenes_{chess, fire, ...}
-./setup_7scenes.py --poses pgt
-# Downloads the data to datasets/pgt_12scenes_{apt1_kitchen, ...}
-./setup_12scenes.py --poses pgt
-```
-
-### Cambridge Landmarks / Niantic Wayspots:
-
-We used a single variant of these datasets. Simply run:
-
-```shell
-cd datasets
-# Downloads the data to datasets/Cambridge_{GreatCourt, KingsCollege, ...}
-./setup_cambridge.py
-# Downloads the data to datasets/wayspots_{bears, cubes, ...}
-./setup_wayspots.py
-```
-
 ## Encoder Test
 
 <p align="center">
 <img src="./misc/car_ace_encoder.gif">
 </p>
 
-<p align="center">
-<img src="./misc/outdoor_ace_encoder.gif">
-</p>
-
+```
+python encoder_matcher/encoder_matcher_test.py
+```
 
 ## Usage
 
@@ -317,43 +241,6 @@ The feature extractor has been trained on 100 scenes from [ScanNet](http://www.s
 as described in Section 3.3 of the paper and Section 1.1 of the supplementary material.
 It is possible to reimplement the encoder training protocol following those instructions.
 
-## Publications
-
-If you use ACE or parts of its code in your own work, please cite:
-
-```
-@inproceedings{brachmann2023ace,
-    title={Accelerated Coordinate Encoding: Learning to Relocalize in Minutes using RGB and Poses},
-    author={Brachmann, Eric and Cavallari, Tommaso and Prisacariu, Victor Adrian},
-    booktitle={CVPR},
-    year={2023},
-}
-```
-
-This code builds on previous camera relocalization pipelines, namely DSAC, DSAC++, and DSAC*. Please consider citing:
-
-```
-@inproceedings{brachmann2017dsac,
-  title={{DSAC}-{Differentiable RANSAC} for Camera Localization},
-  author={Brachmann, Eric and Krull, Alexander and Nowozin, Sebastian and Shotton, Jamie and Michel, Frank and Gumhold, Stefan and Rother, Carsten},
-  booktitle={CVPR},
-  year={2017}
-}
-
-@inproceedings{brachmann2018lessmore,
-  title={Learning less is more - {6D} camera localization via {3D} surface regression},
-  author={Brachmann, Eric and Rother, Carsten},
-  booktitle={CVPR},
-  year={2018}
-}
-
-@article{brachmann2021dsacstar,
-  title={Visual Camera Re-Localization from {RGB} and {RGB-D} Images Using {DSAC}},
-  author={Brachmann, Eric and Rother, Carsten},
-  journal={TPAMI},
-  year={2021}
-}
-```
 
 ## License
 
