@@ -16,6 +16,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
 from torchvision import transforms
+from torchsummary import summary
 
 from read_write_model import read_model, get_intrinsics_matrix, fundamental_21, color_map_value
 
@@ -49,6 +50,7 @@ def create_encoder(model_path="./ace_encoder_pretrained.pt", feature_dim=512):
     encoder_state_dict = torch.load(model_path, map_location="cpu")
     num_encoder_features = encoder_state_dict['res2_conv3.weight'].shape[0]
     encoder.load_state_dict(encoder_state_dict)
+    encoder.cuda()
     return encoder, num_encoder_features
 
 
@@ -58,12 +60,16 @@ def check_encoder_match(image_1_meta, image_2_meta, cameras, images_path):
 
     # extract features from both image
     encoder, num_encoder_features = create_encoder()
+
+    # summary the model encoder
+    summary(encoder, (1, 480, 640))
+
     image_transform = transforms.Compose([
         transforms.Grayscale(), transforms.ToTensor(),
         transforms.Normalize(mean=[0.4], std=[0.25])])
     def extract_feature(image_meta):
         image = read_image(image_meta, images_path, resize_ratio)
-        image_torch = image_transform(image)
+        image_torch = image_transform(image).cuda()
         return encoder(image_torch).permute(1, 2, 0)
 
     features_1 = extract_feature(image_1_meta)
@@ -87,7 +93,7 @@ def check_encoder_match(image_1_meta, image_2_meta, cameras, images_path):
     test_interval = 10
     for y_raw in np.arange(test_border, features_1.shape[0] - test_border, test_interval):
         for x_raw in np.arange(test_border, features_1.shape[1] - test_border, test_interval):
-            pt_1_feature = features_2[y_raw][x_raw]
+            pt_1_feature = features_1[y_raw][x_raw]
             x = size_factor * (x_raw + 0.5)
             y = size_factor * (y_raw + 0.5)
             pt_1 = np.array([x, y]).astype(int)
@@ -138,8 +144,8 @@ def check_encoder_match(image_1_meta, image_2_meta, cameras, images_path):
 if __name__ == '__main__':
     # read camera poses from colmap sparse model
     # get data folder path
-    session_path = "./data/20230420104554/colmap/dense"
-    colmap_model_path = session_path + "/sparse"
+    session_path = "./data/20230817T172928+0800_yvr002_car1/colmap"
+    colmap_model_path = session_path + "/sparse/1"
     images_path = session_path + "/images"
     print("Read colmap model from " + colmap_model_path)
     cameras, images, points3D = read_model(colmap_model_path)
@@ -160,7 +166,7 @@ if __name__ == '__main__':
             continue
         target_point3d_ids_set = set(images[image_key_target].point3D_ids.tolist())
         overlay = get_points3d_overlap(image_point3d_ids_set, target_point3d_ids_set)
-        if overlay > 0.8:  # skip too similiar images
+        if overlay > 0.5:  # skip too similiar images
             continue
         if overlay > max_overlay :
             max_image_key_target = image_key_target
