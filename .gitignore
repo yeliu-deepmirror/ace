@@ -21,3 +21,4 @@ dsacstar/dist
 output/
 runs/
 models/
+*.torchscript
