@@ -73,9 +73,7 @@ if __name__ == '__main__':
     parser.add_argument('--aug_rotation', type=int, default=15,
                         help='max inplane rotation angle')
 
-    parser.add_argument('--aug_scale_max', type=float, default=1.5,
-                        help='max scale factor')
-    parser.add_argument('--aug_scale_min', type=float, default=0.7,
+    parser.add_argument('--aug_scale', type=float, default=1.5,
                         help='max scale factor')
 
     parser.add_argument('--image_resolution', type=int, default=480,

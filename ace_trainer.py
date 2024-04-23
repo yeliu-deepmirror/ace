@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 import torchvision.transforms.functional as TF
-from torch.cuda.amp import GradScaler, autocast
+from torch.cuda.amp import GradScaler
 from torch.utils.data import DataLoader
 from torch.utils.data import sampler
 
@@ -75,8 +75,8 @@ class TrainerACE:
             image_height=self.options.image_resolution,
             augment=self.options.use_aug,
             aug_rotation=self.options.aug_rotation,
-            aug_scale_max=self.options.aug_scale_max,
-            aug_scale_min=self.options.aug_scale_min,
+            aug_scale_max=self.options.aug_scale,
+            aug_scale_min=1 / self.options.aug_scale,
         )
 
         _logger.info("Loaded training scan from: {} -- {} images, mean: {:.2f} {:.2f} {:.2f}".format(
@@ -264,7 +264,7 @@ class TrainerACE:
 
             while buffer_idx < self.options.training_buffer_size:
                 dataset_passes += 1
-                for image_B1HW, image_mask_B1HW, gt_pose_B44, gt_pose_inv_B44, intrinsics_B33, intrinsics_inv_B33, _, _ in training_dataloader:
+                for image_B1HW, image_mask_B1HW, gt_pose_B44, gt_pose_inv_B44, intrinsics_B33, intrinsics_inv_B33, _, path in training_dataloader:
 
                     # Copy to device.
                     image_B1HW = image_B1HW.to(self.device, non_blocking=True)
@@ -274,8 +274,7 @@ class TrainerACE:
                     intrinsics_inv_B33 = intrinsics_inv_B33.to(self.device, non_blocking=True)
 
                     # Compute image features.
-                    with autocast(enabled=self.options.use_half):
-                        features_BCHW = self.regressor.get_features(image_B1HW)
+                    features_BCHW = self.regressor.get_features(image_B1HW)
 
                     # Dimensions after the network's downsampling.
                     B, C, H, W = features_BCHW.shape
@@ -386,8 +385,8 @@ class TrainerACE:
 
         # Reshape to a "fake" BCHW shape, since it's faster to run through the network compared to the original shape.
         features_bCHW = features_bC[None, None, ...].view(-1, 16, 32, channels).permute(0, 3, 1, 2)
-        with autocast(enabled=self.options.use_half):
-            pred_scene_coords_b3HW = self.regressor.get_scene_coordinates(features_bCHW)
+        features_bCHW = features_bCHW.float()
+        pred_scene_coords_b3HW = self.regressor.get_scene_coordinates(features_bCHW)
 
         # Back to the original shape. Convert to float32 as well.
         pred_scene_coords_b31 = pred_scene_coords_b3HW.permute(0, 2, 3, 1).flatten(0, 2).unsqueeze(-1).float()

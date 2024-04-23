@@ -233,7 +233,7 @@ class CamLocDataset(Dataset):
 
         # Convert to half if needed.
         if self.use_half and torch.cuda.is_available():
-            image = image.half()
+            image = image.float()
 
         # Binarize the mask.
         image_mask = image_mask > 0
