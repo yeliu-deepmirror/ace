@@ -69,7 +69,7 @@ class TrainerACE:
 
         # Create dataset.
         self.dataset = CamLocDataset(
-            root_dir=self.options.scene / "train",
+            root_dir=self.options.scene,
             mode=0,  # Default for ACE, we don't need scene coordinates/RGB-D.
             use_half=self.options.use_half,
             image_height=self.options.image_resolution,
@@ -77,8 +77,6 @@ class TrainerACE:
             aug_rotation=self.options.aug_rotation,
             aug_scale_max=self.options.aug_scale_max,
             aug_scale_min=self.options.aug_scale_min,
-            num_clusters=self.options.num_clusters,  # Optional clustering for Cambridge experiments.
-            cluster_idx=self.options.cluster_idx,    # Optional clustering for Cambridge experiments.
         )
 
         _logger.info("Loaded training scan from: {} -- {} images, mean: {:.2f} {:.2f} {:.2f}".format(
@@ -160,7 +158,7 @@ class TrainerACE:
 
             # Setup the ACE render pipeline.
             self.ace_visualizer.setup_mapping_visualisation(
-                self.dataset.pose_files,
+                self.dataset.rgb_poses,
                 self.dataset.rgb_files,
                 self.iterations // self.iterations_output + 1,
                 self.options.render_camera_z_offset
@@ -197,7 +195,7 @@ class TrainerACE:
 
             # Finalize the rendering by animating the fully trained map.
             vis_dataset = CamLocDataset(
-                root_dir=self.options.scene / "train",
+                root_dir=self.options.scene,
                 mode=0,
                 use_half=self.options.use_half,
                 image_height=self.options.image_resolution,
@@ -399,6 +397,7 @@ class TrainerACE:
 
         # Scene coordinates to camera coordinates.
         pred_cam_coords_b31 = torch.bmm(gt_inv_poses_b34, pred_scene_coords_b41)
+        # pred_cam_coords_b31 = torch.nan_to_num(pred_cam_coords_b31, nan=0.0)
 
         # Project scene coordinates.
         pred_px_b31 = torch.bmm(Ks_b33, pred_cam_coords_b31)

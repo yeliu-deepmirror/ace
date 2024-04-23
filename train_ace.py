@@ -97,13 +97,6 @@ if __name__ == '__main__':
     parser.add_argument('--depth_max', type=float, default=1000,
                         help='enforce maximum depth of network predictions')
 
-    # Clustering params, for the ensemble training used in the Cambridge experiments. Disabled by default.
-    parser.add_argument('--num_clusters', type=int, default=None,
-                        help='split the training sequence in this number of clusters. disabled by default')
-
-    parser.add_argument('--cluster_idx', type=int, default=None,
-                        help='train on images part of this cluster. required only if --num_clusters is set.')
-
     # Params for the visualization. If enabled, it will slow down training considerably. But you get a nice video :)
     parser.add_argument('--render_visualization', type=_strtobool, default=False,
                         help='create a video of the mapping process')
