@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 import torchvision.transforms.functional as TF
-from torch.cuda.amp import GradScaler, autocast
+from torch.cuda.amp import GradScaler
 from torch.utils.data import DataLoader
 from torch.utils.data import sampler
 
@@ -69,16 +69,14 @@ class TrainerACE:
 
         # Create dataset.
         self.dataset = CamLocDataset(
-            root_dir=self.options.scene / "train",
+            root_dir=self.options.scene,
             mode=0,  # Default for ACE, we don't need scene coordinates/RGB-D.
             use_half=self.options.use_half,
             image_height=self.options.image_resolution,
             augment=self.options.use_aug,
             aug_rotation=self.options.aug_rotation,
-            aug_scale_max=self.options.aug_scale_max,
-            aug_scale_min=self.options.aug_scale_min,
-            num_clusters=self.options.num_clusters,  # Optional clustering for Cambridge experiments.
-            cluster_idx=self.options.cluster_idx,    # Optional clustering for Cambridge experiments.
+            aug_scale_max=self.options.aug_scale,
+            aug_scale_min=1 / self.options.aug_scale,
         )
 
         _logger.info("Loaded training scan from: {} -- {} images, mean: {:.2f} {:.2f} {:.2f}".format(
@@ -160,7 +158,7 @@ class TrainerACE:
 
             # Setup the ACE render pipeline.
             self.ace_visualizer.setup_mapping_visualisation(
-                self.dataset.pose_files,
+                self.dataset.rgb_poses,
                 self.dataset.rgb_files,
                 self.iterations // self.iterations_output + 1,
                 self.options.render_camera_z_offset
@@ -197,7 +195,7 @@ class TrainerACE:
 
             # Finalize the rendering by animating the fully trained map.
             vis_dataset = CamLocDataset(
-                root_dir=self.options.scene / "train",
+                root_dir=self.options.scene,
                 mode=0,
                 use_half=self.options.use_half,
                 image_height=self.options.image_resolution,
@@ -266,7 +264,7 @@ class TrainerACE:
 
             while buffer_idx < self.options.training_buffer_size:
                 dataset_passes += 1
-                for image_B1HW, image_mask_B1HW, gt_pose_B44, gt_pose_inv_B44, intrinsics_B33, intrinsics_inv_B33, _, _ in training_dataloader:
+                for image_B1HW, image_mask_B1HW, gt_pose_B44, gt_pose_inv_B44, intrinsics_B33, intrinsics_inv_B33, _, path in training_dataloader:
 
                     # Copy to device.
                     image_B1HW = image_B1HW.to(self.device, non_blocking=True)
@@ -276,8 +274,7 @@ class TrainerACE:
                     intrinsics_inv_B33 = intrinsics_inv_B33.to(self.device, non_blocking=True)
 
                     # Compute image features.
-                    with autocast(enabled=self.options.use_half):
-                        features_BCHW = self.regressor.get_features(image_B1HW)
+                    features_BCHW = self.regressor.get_features(image_B1HW)
 
                     # Dimensions after the network's downsampling.
                     B, C, H, W = features_BCHW.shape
@@ -388,8 +385,8 @@ class TrainerACE:
 
         # Reshape to a "fake" BCHW shape, since it's faster to run through the network compared to the original shape.
         features_bCHW = features_bC[None, None, ...].view(-1, 16, 32, channels).permute(0, 3, 1, 2)
-        with autocast(enabled=self.options.use_half):
-            pred_scene_coords_b3HW = self.regressor.get_scene_coordinates(features_bCHW)
+        features_bCHW = features_bCHW.float()
+        pred_scene_coords_b3HW = self.regressor.get_scene_coordinates(features_bCHW)
 
         # Back to the original shape. Convert to float32 as well.
         pred_scene_coords_b31 = pred_scene_coords_b3HW.permute(0, 2, 3, 1).flatten(0, 2).unsqueeze(-1).float()
@@ -399,6 +396,7 @@ class TrainerACE:
 
         # Scene coordinates to camera coordinates.
         pred_cam_coords_b31 = torch.bmm(gt_inv_poses_b34, pred_scene_coords_b41)
+        # pred_cam_coords_b31 = torch.nan_to_num(pred_cam_coords_b31, nan=0.0)
 
         # Project scene coordinates.
         pred_px_b31 = torch.bmm(Ks_b33, pred_cam_coords_b31)

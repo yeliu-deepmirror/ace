@@ -75,7 +75,7 @@ Basic usage:
 ```shell
 ./train_ace.py <scene path> <output map name>
 # Example:
-./train_ace.py datasets/7scenes_chess output/7scenes_chess.pt
+./train_ace.py data/20230817T172928+0800_yvr002_car1 data/20230817T172928+0800_yvr002_car1/ace.pt
 ```
 
 The output map file contains just the weights of the scene-specific head network -- encoded as half-precision floating

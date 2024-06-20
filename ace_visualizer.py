@@ -230,7 +230,7 @@ class ACEVisualizer:
         return gl_to_cv * pose
 
     def setup_mapping_visualisation(self,
-                                    pose_files,
+                                    poses,
                                     image_files,
                                     frame_count,
                                     camera_z_offset
@@ -240,19 +240,15 @@ class ACEVisualizer:
 
         Generate mapping camera pan, and create the mapping trajectory mesh.
 
-        @param pose_files: List of mapping pose files, assumed to contain 4x4 matrices in OpenCV convention.
+        @param poses: List of mapping poses, assumed to contain 4x4 matrices in OpenCV convention.
         @param image_files: Corresponding list of mapping image files.
         @param frame_count: How many frames we plan to render for the mapping stage.
         @param camera_z_offset: Distance from the rendering camera (meters), can be used to zoom in/out depending on scene size.
         """
         _logger.info("Setting up mapping visualisation.")
 
-        # make sure poses and image files are in sync (relying on the file naming schema)
-        pose_files.sort()
-        image_files.sort()
-
         # load mapping poses (4x4 matrices, camera to scene coordinates, OpenGL convention)
-        mapping_poses = [self._convert_cv_to_gl(np.loadtxt(pose_file)) for pose_file in pose_files]
+        mapping_poses = [self._convert_cv_to_gl(pose) for pose in poses]
 
         # create panning motion around scene
         self.pan_cams = self._generate_camera_pan(
@@ -826,5 +822,3 @@ class ACEVisualizer:
                 self.frame_idx += 1
 
         self.reloc_frame_counter += 1
-
-
