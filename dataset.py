@@ -84,7 +84,7 @@ class CamLocDataset(Dataset):
         cnt = 0
         for idx, key in enumerate(colmap_poses):
             cnt += 1
-            if cnt%2 != 0:
+            if cnt%1 != 0:
                 continue
             extr = colmap_poses[key]
             self.rgb_files.append(str(root_dir / 'colmap' / 'images') + "/" + extr.name)

@@ -74,8 +74,15 @@ Basic usage:
 
 ```shell
 ./train_ace.py <scene path> <output map name>
-# Example:
-./train_ace.py data/20230817T172928+0800_yvr002_car1 data/20230817T172928+0800_yvr002_car1/ace.pt
+```
+
+```shell
+SESSION_FOLDER=/home/yeliu/Development/Alpha/Data
+SESSION_NAME=20231114T153707+0800_yvr_test_car_1
+
+./train_ace.py ${SESSION_FOLDER}/${SESSION_NAME} ${SESSION_FOLDER}/${SESSION_NAME}/ace.pt \
+--render_target_path ${SESSION_FOLDER}/${SESSION_NAME}/renderings \
+--render_visualization True
 ```
 
 The output map file contains just the weights of the scene-specific head network -- encoded as half-precision floating
