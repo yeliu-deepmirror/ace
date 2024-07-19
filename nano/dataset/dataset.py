@@ -8,6 +8,28 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data import SubsetRandomSampler
 import torchvision.transforms as transforms
 
+LABEL_TO_ID = {
+    "right": 0,
+    "left": 1,
+    "bot": 2,
+    "chair_bot": 3,
+    "front": 4,
+    "center": 5,
+    "right_chair": 6,
+    "left_chair": 7,
+}
+ID_TO_LABEL = [
+    "right",
+    "left",
+    "bot",
+    "chair_bot",
+    "front",
+    "center",
+    "right_chair",
+    "left_chair",
+]
+
+
 class CarLinemarksDataset(Dataset):
 
     def __init__(self, data_set_folder):
@@ -18,17 +40,7 @@ class CarLinemarksDataset(Dataset):
              transforms.ToTensor(),
              transforms.Resize((320, 256), antialias=True)])
         print("loaded", len(self.images), "data")
-        self.label_to_id = {
-            "right": 0,
-            "left": 1,
-            "bot": 2,
-            "chair_bot": 3,
-            "front": 4,
-            "center": 5,
-            "right_chair": 6,
-            "left_chair": 7,
-        }
-        self.num_labels = len(self.label_to_id)
+        self.num_labels = len(LABEL_TO_ID)
 
     def __len__(self):
         return len(self.images)
@@ -39,15 +51,15 @@ class CarLinemarksDataset(Dataset):
         return image_tensor
 
     def get_label(self, idx):
-        labels = np.zeros((8, 5))
+        labels = np.zeros((self.num_labels, 5))
         label_file = self.images[idx][:-4] + ".txt"
         with open(label_file, 'r') as file_in:
             for line in file_in:
                 message = line.split(',')
-                idx = self.label_to_id[message[4][:-1]]
+                idx = LABEL_TO_ID[message[4][:-1]]
                 labels[idx, 0] = 1.0
                 for i in range(4):
-                    labels[idx, i + 1] = float(message[i])
+                    labels[idx, i + 1] = float(message[i]) / 640
         return labels
 
 

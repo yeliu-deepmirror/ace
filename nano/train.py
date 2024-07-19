@@ -23,7 +23,7 @@ def get_optimizer(model, opt_cfg):
     cfg_args = opt_cfg.copy()
     func_args = {}
     func_args.update(cfg_args)
-    return torch.optim.AdamW([
+    return torch.optim.SGD([
         {"params": model.head.parameters()},
         {"params": model.fpn.parameters()},
     ], **func_args)
@@ -109,6 +109,6 @@ for epoch in range(max_num_epoches + 1):
             test_loss_sum = run_test(det_model, test_loader)
             print(" => test_loss_sum :", test_loss_sum)
     if epoch%50 == 0:
-        # torch.save(det_model.state_dict(), model_path)
-        save_model(det_model, model_path, epoch, 0)
+        torch.save(det_model.state_dict(), model_path)
+        # save_model(det_model, model_path, epoch, 0)
     print(" => train_loss_sum :", train_loss_sum)

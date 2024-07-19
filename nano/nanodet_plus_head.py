@@ -72,7 +72,10 @@ class SimpleConvHead(nn.Module):
                 ))
         self.gfl_reg = nn.Conv2d(self.feat_channels, 4 * (self.reg_max + 1), 3, padding=1)
         self.scales = nn.ModuleList([Scale(1.0) for _ in self.strides])
-        self.fc = nn.Linear(54400, 40)
+        self.fc1 = nn.Linear(54400, 1080)
+        self.fc1_act = nn.Sigmoid()
+        self.fc2 = nn.Linear(1080, 40)
+        self.fc2_act = nn.Sigmoid()
 
     def init_weights(self):
         for m in self.reg_convs:
@@ -90,6 +93,7 @@ class SimpleConvHead(nn.Module):
             outputs.append(output)
 
         outputs = torch.cat(outputs, dim=2).flatten(start_dim=1)
-        outputs = self.fc(outputs)
+        outputs = self.fc1_act(self.fc1(outputs))
+        outputs = self.fc2_act(self.fc2(outputs))
         outputs = outputs.view(-1, 8, 5)
         return outputs
