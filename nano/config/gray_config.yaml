@@ -10,7 +10,16 @@
     num_extra_level: 1
     use_depthwise: True
     act_cfg: "LeakyReLU"
-    
+
+  head_cfg:
+    num_classes: 1
+    input_channel: 96
+    feat_channels: 96
+    stacked_convs: 4
+    strides: [8, 16, 32, 64]
+    act_cfg: LeakyReLU
+    reg_max: 7
+
   lr_scheduler_cfg:
     T_max: 300
     eta_min: 0.00005
