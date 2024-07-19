@@ -1,0 +1,20 @@
+  backbone_cfg:
+    input_channels: 1
+    model_size: 1.0x
+    out_stages: [2, 3, 4]
+    act_cfg: "LeakyReLU"
+  fpn_cfg:
+    in_channels: [116, 232, 464]
+    out_channels: 96
+    kernel_size: 5
+    num_extra_level: 1
+    use_depthwise: True
+    act_cfg: "LeakyReLU"
+    
+  lr_scheduler_cfg:
+    T_max: 300
+    eta_min: 0.00005
+
+  optimizer_cfg:
+    lr: 0.001
+    weight_decay: 0.05
