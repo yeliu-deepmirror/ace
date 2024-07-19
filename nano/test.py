@@ -17,7 +17,7 @@ from dataset.dataset import CarLinemarksDataset
 
 config_file = "nano/config/gray_config.yaml"
 data_set_folder = "data/20240222T101812+0800_oppoma_/dataset"
-model_path = "models/model_nano_lines_250.ckpt"
+model_path = "models/model_nano_lines.ckpt"
 
 
 with open(config_file) as stream:
@@ -54,8 +54,8 @@ def draw_labels_to_image(image, label_ref, label):
                             0.8, color, 1, cv2.LINE_AA)
 
     for i in range(label.shape[0]):
-        if label[i, 0] < 0.5:
-            continue
+        # if label[i, 0] < 0.5:
+        #     continue
         start = (int(label[i, 1]), int(label[i, 2]))
         end = (int(label[i, 3]), int(label[i, 4]))
         color = (0, 1, 0)

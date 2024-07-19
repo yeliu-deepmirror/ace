@@ -17,7 +17,7 @@ from dataset.dataset import CarLinemarksDataset
 config_file = "nano/config/gray_config.yaml"
 data_set_folder = "data/20240222T101812+0800_oppoma_/dataset"
 model_path = "models/model_nano_lines.ckpt"
-max_num_epoches = 1000
+max_num_epoches = 2000
 
 def get_optimizer(model, opt_cfg):
     cfg_args = opt_cfg.copy()
@@ -42,7 +42,7 @@ def label_loss(output, target):
     # TODO: make a better loss
     diff_positions = torch.norm(output[:,:,1:] - target[:,:,1:], dim=2)
     loss_positions = torch.norm(torch.mul(diff_positions, target[:,:,0]), dim=1)
-    label_weight = 100;
+    label_weight = 5.0;
     loss_labels = torch.norm(output[:,:,0] - target[:,:,0], dim=1)
     loss = loss_positions + label_weight * loss_labels
     return loss.sum()
@@ -82,13 +82,13 @@ det_model = NanoLines(nano_config).cuda()
 
 # load the network
 # det_model.load_state_dict(torch.load(model_path))
-load_model_weight(det_model, model_path)
+# load_model_weight(det_model, model_path)
 
 optimizer = get_optimizer(det_model, nano_config["optimizer_cfg"])
 scheduler = get_scheduler(optimizer, nano_config["lr_scheduler_cfg"])
 
 
-for epoch in range(max_num_epoches):
+for epoch in range(max_num_epoches + 1):
     det_model.cuda()
     print("run epoch", epoch)
     train_loss_sum = 0
@@ -103,8 +103,8 @@ for epoch in range(max_num_epoches):
         train_loss_sum += loss.item()
     torch.cuda.empty_cache()
 
-    scheduler.step()
     if epoch%10 == 0:
+        scheduler.step()
         with torch.no_grad():
             test_loss_sum = run_test(det_model, test_loader)
             print(" => test_loss_sum :", test_loss_sum)
