@@ -57,8 +57,8 @@ class SimpleConvHead(nn.Module):
         self.reg_convs = nn.ModuleList()
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
-            # stride = 1 if i < 3 else 2
-            stride = 1
+            stride = 1 if i < 3 else 2
+            # stride = 1
             self.reg_convs.append(
                 ConvModule(
                     chn,
@@ -72,10 +72,8 @@ class SimpleConvHead(nn.Module):
                 ))
         self.gfl_reg = nn.Conv2d(self.feat_channels, 4 * (self.reg_max + 1), 3, padding=1)
         self.scales = nn.ModuleList([Scale(1.0) for _ in self.strides])
-        self.fc1 = nn.Linear(54400, 1080)
+        self.fc1 = nn.Linear(13632, 40)
         self.fc1_act = nn.Sigmoid()
-        self.fc2 = nn.Linear(1080, 40)
-        self.fc2_act = nn.Sigmoid()
 
     def init_weights(self):
         for m in self.reg_convs:
@@ -94,6 +92,6 @@ class SimpleConvHead(nn.Module):
 
         outputs = torch.cat(outputs, dim=2).flatten(start_dim=1)
         outputs = self.fc1_act(self.fc1(outputs))
-        outputs = self.fc2_act(self.fc2(outputs))
+        # outputs = self.fc2_act(self.fc2(outputs))
         outputs = outputs.view(-1, 8, 5)
         return outputs

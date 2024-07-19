@@ -17,13 +17,13 @@ from dataset.dataset import CarLinemarksDataset
 config_file = "nano/config/gray_config.yaml"
 data_set_folder = "data/20240222T101812+0800_oppoma_/dataset"
 model_path = "models/model_nano_lines.ckpt"
-max_num_epoches = 2000
+max_num_epoches = 500
 
 def get_optimizer(model, opt_cfg):
     cfg_args = opt_cfg.copy()
     func_args = {}
     func_args.update(cfg_args)
-    return torch.optim.SGD([
+    return torch.optim.AdamW([
         {"params": model.head.parameters()},
         {"params": model.fpn.parameters()},
     ], **func_args)
@@ -108,7 +108,7 @@ for epoch in range(max_num_epoches + 1):
         with torch.no_grad():
             test_loss_sum = run_test(det_model, test_loader)
             print(" => test_loss_sum :", test_loss_sum)
-    if epoch%50 == 0:
+    if epoch%20 == 0:
         torch.save(det_model.state_dict(), model_path)
         # save_model(det_model, model_path, epoch, 0)
     print(" => train_loss_sum :", train_loss_sum)
