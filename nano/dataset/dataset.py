@@ -1,8 +1,10 @@
 import glob
 import random
+import cv2
 from PIL import Image
 import numpy as np
 
+import torch
 from torchvision.datasets import ImageFolder
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data import SubsetRandomSampler
@@ -17,6 +19,8 @@ LABEL_TO_ID = {
     "center": 5,
     "right_chair": 6,
     "left_chair": 7,
+    "right_b": 8,
+    "left_b": 9,
 }
 ID_TO_LABEL = [
     "right",
@@ -27,13 +31,22 @@ ID_TO_LABEL = [
     "center",
     "right_chair",
     "left_chair",
+    "right_b",
+    "left_b",
 ]
+
+
+def transfrom_image_np(image_np):
+    image_np = cv2.resize(image_np[:, :, 0], (256, 320))
+    image_np = image_np.astype(np.float32) / 255.0
+    image_np = np.expand_dims(image_np, axis=0)
+    return torch.from_numpy(image_np)
 
 
 class CarLinemarksDataset(Dataset):
 
     def __init__(self, data_set_folder):
-        self.images = glob.glob(data_set_folder + "/*.jpg")
+        self.images = glob.glob(data_set_folder + "/*/dataset/*.jpg")
         # TODO : rescale the image
         self.transform = transforms.Compose(
             [transforms.Grayscale(),

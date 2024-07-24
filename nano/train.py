@@ -15,9 +15,10 @@ from nano_plus import NanoLines, save_model, load_model_weight
 from dataset.dataset import CarLinemarksDataset
 
 config_file = "nano/config/gray_config.yaml"
-data_set_folder = "data/20240222T101812+0800_oppoma_/dataset"
+data_set_folder = "/home/yeliu/Development/LidarMapping/data/map/"
 model_path = "models/model_nano_lines.ckpt"
 max_num_epoches = 500
+use_direction_weight = True
 
 def get_optimizer(model, opt_cfg):
     cfg_args = opt_cfg.copy()
@@ -42,9 +43,21 @@ def label_loss(output, target):
     # TODO: make a better loss
     diff_positions = torch.norm(output[:,:,1:] - target[:,:,1:], dim=2)
     loss_positions = torch.norm(torch.mul(diff_positions, target[:,:,0]), dim=1)
-    label_weight = 5.0;
     loss_labels = torch.norm(output[:,:,0] - target[:,:,0], dim=1)
+
+    label_weight = 5.0
     loss = loss_positions + label_weight * loss_labels
+
+    if use_direction_weight:
+        direction_gt = torch.nn.functional.normalize(target[:,:,3:5] - target[:,:,1:3], dim=2)
+        direction_output = torch.nn.functional.normalize(output[:,:,3:5] - output[:,:,1:3], dim=2)
+        diff_direction = torch.norm(direction_gt - direction_output, dim=2)
+        loss_direction = torch.norm(torch.mul(diff_direction, target[:,:,0]), dim=1)
+
+        # dirction is more important than the position
+        # since our position could have large error, during data making
+        direction_weight = 2.0
+        loss += direction_weight * loss_direction
     return loss.sum()
 
 
@@ -81,7 +94,7 @@ test_loader = DataLoader(dataset, batch_size=batch_size, sampler=SubsetRandomSam
 det_model = NanoLines(nano_config).cuda()
 
 # load the network
-# det_model.load_state_dict(torch.load(model_path))
+det_model.load_state_dict(torch.load(model_path))
 # load_model_weight(det_model, model_path)
 
 optimizer = get_optimizer(det_model, nano_config["optimizer_cfg"])
