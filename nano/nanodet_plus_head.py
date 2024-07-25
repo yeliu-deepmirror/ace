@@ -24,7 +24,7 @@ def normal_init(module, mean=0, std=1, bias=0):
 
 
 class SimpleConvHead(nn.Module):
-
+    # GN snpe has problem
     def __init__(
             self,
             num_classes,
@@ -33,7 +33,7 @@ class SimpleConvHead(nn.Module):
             stacked_convs=4,
             strides=[8, 16, 32],  # noqa
             conv_cfg=None,
-            norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),  # noqa
+            norm_cfg=dict(type="BN"),  # noqa
             act_cfg="LeakyReLU",  # noqa
             reg_max=16,
             **kwargs):
@@ -71,7 +71,8 @@ class SimpleConvHead(nn.Module):
                     act_cfg=self.act_cfg,
                 ))
         self.gfl_reg = nn.Conv2d(self.feat_channels, 4 * (self.reg_max + 1), 3, padding=1)
-        self.scales = nn.ModuleList([Scale(1.0) for _ in self.strides])
+        # SNPE 1.6 has bug with Scale, so we remove this layer
+        # self.scales = nn.ModuleList([Scale(1.0) for _ in self.strides])
         self.fc1 = nn.Linear(13632, 50)
         self.fc1_act = nn.Sigmoid()
 
@@ -82,11 +83,11 @@ class SimpleConvHead(nn.Module):
 
     def forward(self, feats):
         outputs = []
-        for x, scale in zip(feats, self.scales):
+        for x in feats:
             reg_feat = x
             for reg_conv in self.reg_convs:
                 reg_feat = reg_conv(reg_feat)
-            bbox_pred = scale(self.gfl_reg(reg_feat)).float()
+            bbox_pred = self.gfl_reg(reg_feat).float()
             output = bbox_pred.flatten(start_dim=2)
             outputs.append(output)
 

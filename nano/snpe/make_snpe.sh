@@ -19,12 +19,15 @@ snpe-onnx-to-dlc --input_network ${ONNX_PATH} \
 
 echo "========================================"
 
-snpe-dlc-quantize \
-  --input_dlc $FP32_MODEL \
-  --input_list $IMAGE_LIST \
-  --output_dlc $INT8_MODEL \
-  --enable_htp \
-  --htp_socs=sm8350 \
-  --axis_quant \
-  --use_enhanced_quantizer \
-  --verbose
+# snpe-dlc-quantize \
+#   --input_dlc $FP32_MODEL \
+#   --input_list $IMAGE_LIST \
+#   --output_dlc $INT8_MODEL \
+#   --enable_htp \
+#   --htp_socs=sm8350 \
+#   --axis_quant \
+#   --use_enhanced_quantizer \
+#   --verbose
+
+cp ${FP32_MODEL} /home/yeliu/Development/LidarMapping/data/map/model_nano_lines.dlc
+cp ${INT8_MODEL} /home/yeliu/Development/LidarMapping/data/map/model_nano_lines_quantized.dlc

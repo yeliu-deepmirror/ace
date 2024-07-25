@@ -1,5 +1,8 @@
-import argparse
+import sys
 import os
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 import yaml
 import onnx
@@ -54,14 +57,3 @@ if __name__ == "__main__":
         print("simplify onnx failed")
 
     print("Model saved to:", output_path)
-
-
-    # conda activate py36
-    # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/yeliu/anaconda3/envs/py36/lib
-    # export ANDROID_NDK_ROOT=/opt/android-sdk/ndk
-    # SNPE_PATH=/home/yeliu/Downloads/dep/snpe-1.61.0.3358
-    # source ${SNPE_PATH}/bin/envsetup.sh -p /home/yeliu/anaconda3/envs/py36/lib/python3.6/site-packages/torch
-    #
-    # snpe-onnx-to-dlc --input_network models/model_nano_lines.onnx \
-    #                  --output_path models/model_nano_lines.dlc
-    # snpe-dlc-info -i models/model_nano_lines.dlc

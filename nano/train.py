@@ -17,7 +17,7 @@ from dataset.dataset import CarLinemarksDataset
 config_file = "nano/config/gray_config.yaml"
 data_set_folder = "/home/yeliu/Development/LidarMapping/data/map/"
 model_path = "models/model_nano_lines.ckpt"
-max_num_epoches = 500
+max_num_epoches = 1500
 use_direction_weight = True
 
 def get_optimizer(model, opt_cfg):
