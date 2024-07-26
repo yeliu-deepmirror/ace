@@ -5,11 +5,11 @@ FP32_MODEL="models/model_nano_lines.dlc"
 INT8_MODEL="models/model_nano_lines_quantized.dlc"
 IMAGE_LIST="data/quantize.txt"
 
-conda activate py36
+# conda activate py36
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/yeliu/anaconda3/envs/py36/lib
 export ANDROID_NDK_ROOT=/opt/android-sdk/ndk
 SNPE_PATH=/home/yeliu/Downloads/dep/snpe-1.61.0.3358
-# source ${SNPE_PATH}/bin/envsetup.sh -p /home/yeliu/anaconda3/envs/py36/lib/python3.6/site-packages/torch
+source ${SNPE_PATH}/bin/envsetup.sh -p /home/yeliu/anaconda3/envs/py36/lib/python3.6/site-packages/torch
 
 echo "========================================"
 
@@ -29,5 +29,6 @@ echo "========================================"
 #   --use_enhanced_quantizer \
 #   --verbose
 
+cp ${ONNX_PATH} /home/yeliu/Development/LidarMapping/data/map/model_nano_lines.onnx
 cp ${FP32_MODEL} /home/yeliu/Development/LidarMapping/data/map/model_nano_lines.dlc
 cp ${INT8_MODEL} /home/yeliu/Development/LidarMapping/data/map/model_nano_lines_quantized.dlc

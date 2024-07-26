@@ -1,5 +1,6 @@
 import glob
 import random
+import math
 import cv2
 from PIL import Image
 import numpy as np
@@ -19,8 +20,8 @@ LABEL_TO_ID = {
     "center": 5,
     "right_chair": 6,
     "left_chair": 7,
-    "right_b": 8,
-    "left_b": 9,
+    "front_down": 8,
+    "chair_top": 9,
 }
 ID_TO_LABEL = [
     "right",
@@ -31,8 +32,8 @@ ID_TO_LABEL = [
     "center",
     "right_chair",
     "left_chair",
-    "right_b",
-    "left_b",
+    "front_down",
+    "chair_top",
 ]
 
 
@@ -46,6 +47,7 @@ def transfrom_image_np(image_np):
 class CarLinemarksDataset(Dataset):
 
     def __init__(self, data_set_folder):
+        self.augmentation = False
         self.images = glob.glob(data_set_folder + "/*/dataset/*.jpg")
         # TODO : rescale the image
         self.transform = transforms.Compose(
@@ -75,10 +77,26 @@ class CarLinemarksDataset(Dataset):
                     labels[idx, i + 1] = float(message[i]) / 640
         return labels
 
+    def rotate_labels(self, label, angle):
+        theta = -angle * np.pi / 180.0
+        rot_matrix = np.array([[np.cos(theta), -np.sin(theta)],
+                               [np.sin(theta),  np.cos(theta)]])
+        offset = np.array([240 / 640, 320 / 640])
+        for idx in range(label.shape[0]):
+            label[idx, 1:3] = np.dot(rot_matrix, label[idx, 1:3] - offset) + offset
+            label[idx, 3:5] = np.dot(rot_matrix, label[idx, 3:5] - offset) + offset
+        return label
+
 
     def __getitem__(self, idx):
         image = self.get_image(idx)
         label = self.get_label(idx)
-        # sample = {'image': self.get_image(idx), 'label': self.get_label(idx)}
-        # print(sample['image'].shape, )
+
+        if self.augmentation:
+            angle = 40.0 * (random.random() - 0.5)
+            # rotate the image
+            image = transforms.functional.rotate(image, angle, transforms.InterpolationMode.BILINEAR)
+            # rotate the label
+            label = self.rotate_labels(label, angle)
+
         return (image, label)

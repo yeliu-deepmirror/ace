@@ -19,26 +19,25 @@ images_folder = "data/car_line_yvr"
 model_path = "models/model_nano_lines.ckpt"
 lines_foler = "data"
 
-class LineProjector:
-    def __init__(self, lines_foler):
-        self.line_points = np.zeros((len(LABEL_TO_ID), 6))
-        # read 3d lines from dataset
-        lines_file = lines_foler + "/lines.txt"
-        with open(lines_file, 'r') as file_in:
-            for line in file_in:
-                message = line.split(',')
-                idx = LABEL_TO_ID[message[6][:-1]]
-                for i in range(6):
-                    self.line_points[idx, i] = float(message[i])
-        print(self.line_points)
-
+# class LineProjector:
+#     def __init__(self, lines_foler):
+#         self.line_points = np.zeros((len(LABEL_TO_ID), 6))
+#         # read 3d lines from dataset
+#         lines_file = lines_foler + "/lines.txt"
+#         with open(lines_file, 'r') as file_in:
+#             for line in file_in:
+#                 message = line.split(',')
+#                 idx = LABEL_TO_ID[message[6][:-1]]
+#                 for i in range(6):
+#                     self.line_points[idx, i] = float(message[i])
+#         print(self.line_points)
+#
 
 with open(config_file) as stream:
     try:
         nano_config = yaml.safe_load(stream)
     except yaml.YAMLError as exc:
         print(exc)
-lines_projector = LineProjector(lines_foler)
 
 # run the test images
 det_model = NanoLines(nano_config).cuda()
