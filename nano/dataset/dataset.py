@@ -1,7 +1,6 @@
 import glob
 import random
 import math
-import cv2
 from PIL import Image
 import numpy as np
 
@@ -38,6 +37,7 @@ ID_TO_LABEL = [
 
 
 def transfrom_image_np(image_np):
+    import cv2
     image_np = cv2.resize(image_np[:, :, 0], (256, 320))
     image_np = image_np.astype(np.float32) / 255.0
     image_np = np.expand_dims(image_np, axis=0)
@@ -48,6 +48,7 @@ class CarLinemarksDataset(Dataset):
 
     def __init__(self, data_set_folder):
         self.augmentation = False
+        self.buffer = False
         self.images = glob.glob(data_set_folder + "/*/dataset/*.jpg")
         # TODO : rescale the image
         self.transform = transforms.Compose(
@@ -56,6 +57,14 @@ class CarLinemarksDataset(Dataset):
              transforms.Resize((320, 256), antialias=True)])
         print("loaded", len(self.images), "data")
         self.num_labels = len(LABEL_TO_ID)
+        self.data_buffer = []
+        if self.buffer:
+            print("=> buffering the whole dataset")
+            for idx in range(len(self.images)):
+                image = self.get_image(idx).cuda()
+                label = torch.from_numpy(self.get_label(idx)).cuda()
+                self.data_buffer.append([image, label])
+
 
     def __len__(self):
         return len(self.images)
@@ -89,6 +98,10 @@ class CarLinemarksDataset(Dataset):
 
 
     def __getitem__(self, idx):
+        if self.buffer:
+            tmp = self.data_buffer[idx]
+            return (tmp[0], tmp[1])
+
         image = self.get_image(idx)
         label = self.get_label(idx)
 
