@@ -194,7 +194,7 @@ class GhostPAN(nn.Module):
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg,
                 ))
-        print("normal init ghost pan")
+        print("  => normal init ghost pan")
         self.apply(init_weights)
 
     def forward(self, inputs):

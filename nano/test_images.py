@@ -16,7 +16,7 @@ from dataset.dataset import CarLinemarksDataset, LABEL_TO_ID, ID_TO_LABEL, trans
 
 config_file = "nano/config/gray_config.yaml"
 images_folder = "data/car_line_yvr"
-model_path = "models/model_nano_lines.ckpt"
+model_path = "models/model_nano_lines_best.ckpt"
 lines_foler = "data"
 
 # class LineProjector:

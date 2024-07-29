@@ -76,7 +76,8 @@ class SimpleConvHead(nn.Module):
 
         # the output value ranges (0, 1), but Sigmoid might be too strong
         self.fc1 = nn.Linear(13632, 50)
-        self.fc1_act = nn.Sigmoid()
+        # self.fc1_act = nn.Sigmoid()
+        self.fc1_act = nn.LeakyReLU()
         # self.normal_value = torch.tensor(1.2, dtype=torch.float)
         # self.offset_value = torch.tensor(-0.1, dtype=torch.float)
 

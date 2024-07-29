@@ -17,8 +17,9 @@ from dataset.dataset import CarLinemarksDataset
 config_file = "nano/config/gray_config.yaml"
 data_set_folder = "/home/yeliu/Development/LidarMapping/data/map/"
 model_path = "models/model_nano_lines.ckpt"
+model_best_path = "models/model_nano_lines_best.ckpt"
 train_image = "models/train.png"
-max_num_epoches = 1500
+max_num_epoches = 3000
 use_direction_loss = True
 use_point_to_line_loss = False
 continue_trainning = False
@@ -27,10 +28,8 @@ def get_optimizer(model, opt_cfg):
     cfg_args = opt_cfg.copy()
     func_args = {}
     func_args.update(cfg_args)
-    return torch.optim.AdamW([
-        {"params": model.head.parameters()},
-        {"params": model.fpn.parameters()},
-    ], **func_args)
+    params_opt = filter(lambda p: p.requires_grad, model.parameters())
+    return torch.optim.AdamW(params=params_opt, **func_args)
 
 
 def get_scheduler(optimizer, scheduler_cfg):
@@ -56,7 +55,7 @@ def label_loss(output, target):
     loss_positions = torch.norm(torch.mul(diff_positions, target[:,:,0]), dim=1)
     loss_labels = torch.norm(output[:,:,0] - target[:,:,0], dim=1)
 
-    label_weight = 5.0
+    label_weight = 10.0
     loss = loss_positions + label_weight * loss_labels
 
     direction_gt = torch.nn.functional.normalize(target[:,:,3:5] - target[:,:,1:3], dim=2)
@@ -124,11 +123,13 @@ if continue_trainning:
     # load_model_weight(det_model, model_path)
 
 optimizer = get_optimizer(det_model, nano_config["optimizer_cfg"])
+scheduler = None
 scheduler = get_scheduler(optimizer, nano_config["lr_scheduler_cfg"])
 
 train_losses = []
 test_epoches = []
 test_losses = []
+best_test_loss = float('inf')
 for epoch in range(max_num_epoches + 1):
     det_model.cuda()
     print("run epoch", epoch)
@@ -146,13 +147,19 @@ for epoch in range(max_num_epoches + 1):
 
     train_losses.append(train_loss_sum)
 
-    if epoch%10 == 0:
+    if scheduler is not None:
         scheduler.step()
+
+    if epoch%10 == 0:
         with torch.no_grad():
             test_loss_sum = run_test(det_model, test_loader)
             test_epoches.append(epoch)
             test_losses.append(test_loss_sum)
             print(" => test_loss_sum :", test_loss_sum)
+
+            if test_loss_sum < best_test_loss:
+                best_test_loss = test_loss_sum
+                torch.save(det_model.state_dict(), model_best_path)
 
     if epoch%20 == 0:
         torch.save(det_model.state_dict(), model_path)
