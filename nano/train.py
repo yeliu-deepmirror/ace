@@ -21,7 +21,7 @@ model_best_path = "models/model_nano_lines_best.ckpt"
 train_image = "models/train.png"
 max_num_epoches = 3000
 use_direction_loss = True
-use_point_to_line_loss = False
+use_point_to_line_loss = True
 continue_trainning = False
 
 def get_optimizer(model, opt_cfg):
