@@ -19,7 +19,7 @@ from dataset.dataset import CarLinemarksDataset, LABEL_TO_ID, ID_TO_LABEL
 
 
 config_file = "nano/config/gray_config.yaml"
-model_path = "models/model_nano_lines.ckpt"
+model_path = "models/model_nano_lines_best.ckpt"
 output_path = "models/model_nano_lines.onnx"
 
 if __name__ == "__main__":

@@ -28,6 +28,10 @@ def get_optimizer(model, opt_cfg):
     cfg_args = opt_cfg.copy()
     func_args = {}
     func_args.update(cfg_args)
+    # return torch.optim.AdamW([
+    #     {"params": model.head.parameters()},
+    #     {"params": model.fpn.parameters()},
+    # ], **func_args)
     params_opt = filter(lambda p: p.requires_grad, model.parameters())
     return torch.optim.AdamW(params=params_opt, **func_args)
 
