@@ -62,7 +62,7 @@ class CarLinemarksDataset(Dataset):
             print("=> buffering the whole dataset")
             for idx in range(len(self.images)):
                 image = self.get_image(idx).cuda()
-                label = torch.from_numpy(self.get_label(idx))
+                label = torch.from_numpy(self.get_label(idx)).cuda()
                 self.data_buffer.append([image, label])
 
 
