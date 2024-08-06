@@ -49,7 +49,7 @@ class CarLinemarksDataset(Dataset):
     def __init__(self, data_set_folder):
         self.augmentation = False
         self.buffer = False
-        self.images = glob.glob(data_set_folder + "/*/dataset/*.jpg")
+        self.images = glob.glob(data_set_folder + "/20240222T101812+0800_oppoma_/dataset/*.jpg")
         # TODO : rescale the image
         self.transform = transforms.Compose(
             [transforms.Grayscale(),

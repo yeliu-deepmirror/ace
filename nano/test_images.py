@@ -15,7 +15,7 @@ from nano_plus import NanoLines, save_model, load_model_weight
 from dataset.dataset import CarLinemarksDataset, LABEL_TO_ID, ID_TO_LABEL, transfrom_image_np
 
 config_file = "nano/config/gray_config.yaml"
-images_folder = "data/car_line_yvr"
+images_folder = "data/car_line"
 model_path = "models/model_nano_lines_best.ckpt"
 lines_foler = "data"
 
@@ -67,7 +67,7 @@ def draw_labels_to_image(image, label):
 
 with torch.no_grad():
     images = glob.glob(images_folder + "/*.jpg")
-    dataset = CarLinemarksDataset(images_folder)
+    # dataset = CarLinemarksDataset(images_folder)
 
     for idx in range(len(images)):
         image_cv = cv2.imread(images[idx])

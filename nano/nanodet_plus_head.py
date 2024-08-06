@@ -27,10 +27,11 @@ class SimpleConvHead(nn.Module):
     # GN snpe has problem
     def __init__(
             self,
-            num_classes,
+            num_lines,
             input_channel,
-            feat_channels=256,
-            stacked_convs=4,
+            feat_channels=96,
+            stacked_convs=2,
+            kernel_size=5,
             strides=[8, 16, 32],  # noqa
             conv_cfg=None,
             norm_cfg=dict(type="BN"),  # noqa
@@ -38,12 +39,14 @@ class SimpleConvHead(nn.Module):
             reg_max=16,
             **kwargs):
         super(SimpleConvHead, self).__init__()
-        self.num_classes = num_classes
+        self.num_lines = num_lines
         self.in_channels = input_channel
         self.feat_channels = feat_channels
         self.stacked_convs = stacked_convs
         self.strides = strides
+        self.kernel_size = kernel_size
         self.reg_max = reg_max
+        self.ConvModule = ConvModule
 
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
@@ -52,30 +55,44 @@ class SimpleConvHead(nn.Module):
         self.init_layers()
         self.init_weights()
 
-    def init_layers(self):
-        self.relu = nn.ReLU(inplace=True)
-        self.reg_convs = nn.ModuleList()
+    def _buid_not_shared_head(self):
+        cls_convs = nn.ModuleList()
         for i in range(self.stacked_convs):
             chn = self.in_channels if i == 0 else self.feat_channels
-            stride = 1 if i < 3 else 2
-            # stride = 1
-            self.reg_convs.append(
-                ConvModule(
+            cls_convs.append(
+                self.ConvModule(
                     chn,
                     self.feat_channels,
-                    3,
-                    stride=stride,
-                    padding=1,
-                    conv_cfg=self.conv_cfg,
+                    self.kernel_size,
+                    stride=1,
+                    padding=self.kernel_size // 2,
                     norm_cfg=self.norm_cfg,
+                    bias=self.norm_cfg is None,
                     act_cfg=self.act_cfg,
-                ))
-        self.gfl_reg = nn.Conv2d(self.feat_channels, 4 * (self.reg_max + 1), 3, padding=1)
-        # SNPE 1.6 has bug with Scale, so we remove this layer
-        # self.scales = nn.ModuleList([Scale(1.0) for _ in self.strides])
+                )
+            )
+        return cls_convs
+
+    def init_layers(self):
+        self.cls_convs = nn.ModuleList()
+        for _ in self.strides:
+            cls_convs = self._buid_not_shared_head()
+            self.cls_convs.append(cls_convs)
+
+        self.gfl_cls = nn.ModuleList(
+            [
+                nn.Conv2d(
+                    self.feat_channels,
+                    96,
+                    1,
+                    padding=0,
+                )
+                for _ in self.strides
+            ]
+        )
 
         # the output value ranges (0, 1), but Sigmoid might be too strong
-        self.fc1 = nn.Linear(13632, 50)
+        self.fc1 = nn.Linear(163200, 50)
         self.fc1_act = nn.Sigmoid()
         # self.fc1_act = nn.LeakyReLU()
         # self.normal_value = torch.tensor(1.2, dtype=torch.float)
@@ -83,23 +100,38 @@ class SimpleConvHead(nn.Module):
 
 
     def init_weights(self):
-        for m in self.reg_convs:
-            normal_init(m.conv, std=0.01)
-        normal_init(self.gfl_reg, std=0.01)
-        normal_init(self.fc1, std=0.01)
+        for m in self.cls_convs.modules():
+            if isinstance(m, nn.Conv2d):
+                normal_init(m, std=0.01)
+        # normal_init(self.fc1, std=0.01)
+        # init cls head with confidence = 0.01
+        bias_cls = -4.595
+        for i in range(len(self.strides)):
+            normal_init(self.gfl_cls[i], std=0.01, bias=bias_cls)
+
 
     def forward(self, feats):
         outputs = []
-        for x in feats:
-            reg_feat = x
-            for reg_conv in self.reg_convs:
-                reg_feat = reg_conv(reg_feat)
-            bbox_pred = self.gfl_reg(reg_feat).float()
-            output = bbox_pred.flatten(start_dim=2)
-            outputs.append(output)
+        for feat, cls_convs, gfl_cls in zip(
+            feats,
+            self.cls_convs,
+            self.gfl_cls,
+        ):
+            for conv in cls_convs:
+                feat = conv(feat)
+            output = gfl_cls(feat)
+            outputs.append(output.flatten(start_dim=2))
+        # outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
 
+        # print(outputs.shape)
+        # return outputs
+
+        # outputs = self.final_pool(torch.cat(outputs, dim=2))
         outputs = torch.cat(outputs, dim=2).flatten(start_dim=1)
+
+        print(outputs.shape)
         # outputs = self.normal_value * self.fc1_act(self.fc1(outputs)) - self.offset_value
         outputs = self.fc1_act(self.fc1(outputs))
+
         outputs = outputs.view(-1, 10, 5)
         return outputs
