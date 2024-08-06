@@ -12,7 +12,7 @@
     act_cfg: "LeakyReLU"
 
   head_cfg:
-    num_classes: 1
+    num_lines: 10
     input_channel: 96
     feat_channels: 96
     stacked_convs: 4

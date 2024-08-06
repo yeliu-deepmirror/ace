@@ -27,7 +27,7 @@ class SimpleConvHead(nn.Module):
     # GN snpe has problem
     def __init__(
             self,
-            num_classes,
+            num_lines,
             input_channel,
             feat_channels=256,
             stacked_convs=4,
@@ -38,7 +38,7 @@ class SimpleConvHead(nn.Module):
             reg_max=16,
             **kwargs):
         super(SimpleConvHead, self).__init__()
-        self.num_classes = num_classes
+        self.num_lines = num_lines
         self.in_channels = input_channel
         self.feat_channels = feat_channels
         self.stacked_convs = stacked_convs
@@ -70,13 +70,14 @@ class SimpleConvHead(nn.Module):
                     norm_cfg=self.norm_cfg,
                     act_cfg=self.act_cfg,
                 ))
-        self.gfl_reg = nn.Conv2d(self.feat_channels, 4 * (self.reg_max + 1), 3, padding=1)
+        self.gfl_reg = nn.Conv2d(self.feat_channels, 5 * self.num_lines, 3, padding=1)
         # SNPE 1.6 has bug with Scale, so we remove this layer
         # self.scales = nn.ModuleList([Scale(1.0) for _ in self.strides])
+        self.final_pool = nn.AvgPool2d((1, 425))
 
         # the output value ranges (0, 1), but Sigmoid might be too strong
-        self.fc1 = nn.Linear(13632, 50)
-        self.fc1_act = nn.Sigmoid()
+        # self.fc1 = nn.Linear(13632, 50)
+        # self.fc1_act = nn.Sigmoid()
         # self.fc1_act = nn.LeakyReLU()
         # self.normal_value = torch.tensor(1.2, dtype=torch.float)
         # self.offset_value = torch.tensor(-0.1, dtype=torch.float)
@@ -86,7 +87,7 @@ class SimpleConvHead(nn.Module):
         for m in self.reg_convs:
             normal_init(m.conv, std=0.01)
         normal_init(self.gfl_reg, std=0.01)
-        normal_init(self.fc1, std=0.01)
+        # normal_init(self.fc1, std=0.01)
 
     def forward(self, feats):
         outputs = []
@@ -98,8 +99,6 @@ class SimpleConvHead(nn.Module):
             output = bbox_pred.flatten(start_dim=2)
             outputs.append(output)
 
-        outputs = torch.cat(outputs, dim=2).flatten(start_dim=1)
-        # outputs = self.normal_value * self.fc1_act(self.fc1(outputs)) - self.offset_value
-        outputs = self.fc1_act(self.fc1(outputs))
+        outputs = self.final_pool(torch.cat(outputs, dim=2))
         outputs = outputs.view(-1, 10, 5)
         return outputs
