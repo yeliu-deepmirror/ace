@@ -42,7 +42,7 @@ with open(config_file) as stream:
 # run the test images
 det_model = NanoLines(nano_config).cuda()
 # load_model_weight(det_model, model_path)
-# det_model.load_state_dict(torch.load(model_path))
+det_model.load_state_dict(torch.load(model_path))
 
 def draw_labels_to_image(image, label):
     image = torch.squeeze(image).cpu().detach().numpy()
